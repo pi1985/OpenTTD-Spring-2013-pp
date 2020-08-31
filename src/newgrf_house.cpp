@@ -62,6 +62,16 @@ HouseResolverObject::HouseResolverObject(HouseID house_id, TileIndex tile, Town 
 	this->root_spritegroup = HouseSpec::Get(house_id)->grf_prop.spritegroup[0];
 }
 
+GrfSpecFeature HouseResolverObject::GetFeature() const
+{
+	return GSF_HOUSES;
+}
+
+uint32 HouseResolverObject::GetDebugID() const
+{
+	return HouseSpec::Get(this->house_scope.house_id)->grf_prop.local_id;
+}
+
 HouseClassID AllocateHouseClassID(byte grf_class_id, uint32 grfid)
 {
 	/* Start from 1 because 0 means that no class has been assigned. */
@@ -98,8 +108,6 @@ void IncreaseBuildingCount(Town *t, HouseID house_id)
 {
 	HouseClassID class_id = HouseSpec::Get(house_id)->class_id;
 
-	if (!_loaded_newgrf_features.has_newhouses) return;
-
 	t->cache.building_counts.id_count[house_id]++;
 	_building_counts.id_count[house_id]++;
 
@@ -118,8 +126,6 @@ void IncreaseBuildingCount(Town *t, HouseID house_id)
 void DecreaseBuildingCount(Town *t, HouseID house_id)
 {
 	HouseClassID class_id = HouseSpec::Get(house_id)->class_id;
-
-	if (!_loaded_newgrf_features.has_newhouses) return;
 
 	if (t->cache.building_counts.id_count[house_id] > 0) t->cache.building_counts.id_count[house_id]--;
 	if (_building_counts.id_count[house_id] > 0) _building_counts.id_count[house_id]--;

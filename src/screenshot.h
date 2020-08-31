@@ -22,11 +22,14 @@ enum ScreenshotType {
 	SC_DEFAULTZOOM, ///< Zoomed to default zoom level screenshot of the visible area.
 	SC_WORLD,       ///< World screenshot.
 	SC_HEIGHTMAP,   ///< Heightmap of the world.
+	SC_MINIMAP,     ///< Minimap screenshot.
 };
 
-void SetupScreenshotViewport(ScreenshotType t, struct ViewPort *vp);
+void SetupScreenshotViewport(ScreenshotType t, struct Viewport *vp);
 bool MakeHeightmapScreenshot(const char *filename);
+void MakeScreenshotWithConfirm(ScreenshotType t);
 bool MakeScreenshot(ScreenshotType t, const char *name);
+bool MakeMinimapWorldScreenshot();
 
 extern char _screenshot_format_name[8];
 extern uint _num_screenshot_formats;

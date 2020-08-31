@@ -25,6 +25,7 @@
 #endif
 #include <sys/stat.h>
 #include <algorithm>
+#include <sstream>
 
 #ifdef WITH_XDG_BASEDIR
 #include <basedir.h>
@@ -481,6 +482,28 @@ FILE *FioFOpenFile(const char *filename, const char *mode, Subdirectory subdir, 
 		strecpy(resolved_name, filename, lastof(resolved_name));
 		strtolower(resolved_name);
 
+		/* Resolve ".." */
+		std::istringstream ss(resolved_name);
+		std::vector<std::string> tokens;
+		std::string token;
+		while (std::getline(ss, token, PATHSEPCHAR)) {
+			if (token == "..") {
+				if (tokens.size() < 2) return nullptr;
+				tokens.pop_back();
+			} else {
+				tokens.push_back(token);
+			}
+		}
+		resolved_name[0] = '\0';
+		bool first = true;
+		for (const std::string &token : tokens) {
+			if (!first) {
+				strecat(resolved_name, PATHSEP, lastof(resolved_name));
+			}
+			strecat(resolved_name, token.c_str(), lastof(resolved_name));
+			first = false;
+		}
+
 		size_t resolved_len = strlen(resolved_name);
 
 		/* Resolve ONE directory link */
@@ -527,10 +550,24 @@ FILE *FioFOpenFile(const char *filename, const char *mode, Subdirectory subdir, 
 
 /**
  * Create a directory with the given name
+ * If the parent directory does not exist, it will try to create that as well.
  * @param name the new name of the directory
  */
 void FioCreateDirectory(const char *name)
 {
+	char dirname[MAX_PATH];
+	strecpy(dirname, name, lastof(dirname));
+	char *p = strrchr(dirname, PATHSEPCHAR);
+	if (p != nullptr) {
+		*p = '\0';
+		DIR *dir = ttd_opendir(dirname);
+		if (dir == nullptr) {
+			FioCreateDirectory(dirname); // Try creating the parent directory, if we couldn't open it
+		} else {
+			closedir(dir);
+		}
+	}
+
 	/* Ignore directory creation errors; they'll surface later on, and most
 	 * of the time they are 'directory already exists' errors anyhow. */
 #if defined(_WIN32)
@@ -892,7 +929,10 @@ bool ExtractTar(const char *tar_filename, Subdirectory subdir)
 	const char *dirname = (*it).second.dirname;
 
 	/* The file doesn't have a sub directory! */
-	if (dirname == nullptr) return false;
+	if (dirname == nullptr) {
+		DEBUG(misc, 1, "Extracting %s failed; archive rejected, the contents must be in a sub directory", tar_filename);
+		return false;
+	}
 
 	char filename[MAX_PATH];
 	strecpy(filename, tar_filename, lastof(filename));
@@ -1231,8 +1271,9 @@ void DeterminePaths(const char *exe)
 		free(tmp);
 	}
 
-	extern char *_log_file;
-	_log_file = str_fmt("%sopenttd.log",  _personal_dir);
+	extern std::string _log_file;
+	_log_file = _personal_dir;
+	_log_file += "openttd.log";
 }
 
 /**

@@ -411,7 +411,7 @@ STR_SORT_BY_CAPTION_DATE                                        :{BLACK}Дата
 STR_SORT_BY_NAME                                                :Название
 STR_SORT_BY_PRODUCTION                                          :Производительность
 STR_SORT_BY_TYPE                                                :Тип
-STR_SORT_BY_TRANSPORTED                                         :Вывоз
+STR_SORT_BY_TRANSPORTED                                         :% перевезённого
 STR_SORT_BY_NUMBER                                              :Номер
 STR_SORT_BY_PROFIT_LAST_YEAR                                    :Прибыль в прошлом году
 STR_SORT_BY_PROFIT_THIS_YEAR                                    :Прибыль в текущем году
@@ -528,7 +528,7 @@ STR_FILE_MENU_EXIT                                              :Выход
 
 # map menu
 STR_MAP_MENU_MAP_OF_WORLD                                       :Карта мира
-STR_MAP_MENU_EXTRA_VIEW_PORT                                    :Доп. окно просмотра
+STR_MAP_MENU_EXTRA_VIEWPORT                                     :Доп. окно просмотра
 STR_MAP_MENU_LINGRAPH_LEGEND                                    :Легенда грузоперевозок
 STR_MAP_MENU_SIGN_LIST                                          :Список табличек
 
@@ -604,9 +604,6 @@ STR_ABOUT_MENU_SEPARATOR                                        :
 STR_ABOUT_MENU_TOGGLE_CONSOLE                                   :Консоль
 STR_ABOUT_MENU_AI_DEBUG                                         :Отладка ИИ / скриптов
 STR_ABOUT_MENU_SCREENSHOT                                       :Снимок экрана
-STR_ABOUT_MENU_ZOOMIN_SCREENSHOT                                :Снимок экрана в макс. приближении
-STR_ABOUT_MENU_DEFAULTZOOM_SCREENSHOT                           :Снимок экрана в обычном масштабе
-STR_ABOUT_MENU_GIANT_SCREENSHOT                                 :Снимок всей карты
 STR_ABOUT_MENU_SHOW_FRAMERATE                                   :Информация о скорости игры
 STR_ABOUT_MENU_ABOUT_OPENTTD                                    :Об игре
 STR_ABOUT_MENU_SPRITE_ALIGNER                                   :Выравнивание спрайтов
@@ -789,9 +786,6 @@ STR_MUSIC_PLAYLIST_CUSTOM_1                                     :{TINY_FONT}{BLA
 STR_MUSIC_PLAYLIST_CUSTOM_2                                     :{TINY_FONT}{BLACK}Пользоват. 2
 STR_MUSIC_MUSIC_VOLUME                                          :{TINY_FONT}{BLACK}Громкость музыки
 STR_MUSIC_EFFECTS_VOLUME                                        :{TINY_FONT}{BLACK}Громкость звука
-STR_MUSIC_RULER_MIN                                             :{TINY_FONT}{BLACK}МИН
-STR_MUSIC_RULER_MAX                                             :{TINY_FONT}{BLACK}МАКС
-STR_MUSIC_RULER_MARKER                                          :{TINY_FONT}{BLACK}'
 STR_MUSIC_TRACK_NONE                                            :{TINY_FONT}{DKGREEN}--
 STR_MUSIC_TRACK_DIGIT                                           :{TINY_FONT}{DKGREEN}{ZEROFILL_NUM}
 STR_MUSIC_TITLE_NONE                                            :{TINY_FONT}{DKGREEN}------
@@ -1035,7 +1029,7 @@ STR_NEWS_EXCLUSIVE_RIGHTS_TITLE                                 :{BIG_FONT}{BLAC
 STR_NEWS_EXCLUSIVE_RIGHTS_DESCRIPTION                           :{BIG_FONT}{BLACK}Администрация г.{NBSP}{TOWN} заключила контракт с компанией «{STRING}», предоставляющий ей эксклюзивные права на транспортные услуги в городе сроком на 1{NBSP}год!
 
 # Extra view window
-STR_EXTRA_VIEW_PORT_TITLE                                       :{WHITE}Окно просмотра {COMMA}
+STR_EXTRA_VIEWPORT_TITLE                                        :{WHITE}Окно просмотра {COMMA}
 STR_EXTRA_VIEW_MOVE_VIEW_TO_MAIN                                :{BLACK}Из основного окна
 STR_EXTRA_VIEW_MOVE_VIEW_TO_MAIN_TT                             :{BLACK}Показать то, что отображается в основном окне
 STR_EXTRA_VIEW_MOVE_MAIN_TO_VIEW                                :{BLACK}В основное окно
@@ -1068,7 +1062,7 @@ STR_GAME_OPTIONS_CURRENCY_NLG                                   :Нидерла�
 STR_GAME_OPTIONS_CURRENCY_NOK                                   :Норвежская крона (NOK)
 STR_GAME_OPTIONS_CURRENCY_PLN                                   :Польский злотый (PLN)
 STR_GAME_OPTIONS_CURRENCY_RON                                   :Румынский лей (RON)
-STR_GAME_OPTIONS_CURRENCY_RUR                                   :Российский рубль (RUR)
+STR_GAME_OPTIONS_CURRENCY_RUR                                   :Российский рубль (старый) (RUR)
 STR_GAME_OPTIONS_CURRENCY_SIT                                   :Словенский толар (SIT)
 STR_GAME_OPTIONS_CURRENCY_SEK                                   :Шведская крона (SEK)
 STR_GAME_OPTIONS_CURRENCY_TRY                                   :Турецкая лира (TRY)
@@ -1081,11 +1075,12 @@ STR_GAME_OPTIONS_CURRENCY_ZAR                                   :Южноафр�
 STR_GAME_OPTIONS_CURRENCY_CUSTOM                                :Своя...
 STR_GAME_OPTIONS_CURRENCY_GEL                                   :Грузинский лари (GEL)
 STR_GAME_OPTIONS_CURRENCY_IRR                                   :Иранский риал (IRR)
-STR_GAME_OPTIONS_CURRENCY_RUB                                   :Российский новый рубль (RUR)
+STR_GAME_OPTIONS_CURRENCY_RUB                                   :Российский рубль (RUR)
 STR_GAME_OPTIONS_CURRENCY_MXN                                   :Мексиканский песо (MXN)
 STR_GAME_OPTIONS_CURRENCY_NTD                                   :Новый тайваньский доллар (NTD)
 STR_GAME_OPTIONS_CURRENCY_CNY                                   :Китайский юань (CNY)
 STR_GAME_OPTIONS_CURRENCY_HKD                                   :Гонконгский доллар (HKD)
+STR_GAME_OPTIONS_CURRENCY_INR                                   :Индийская рупия (INR)
 ############ end of currency region
 
 STR_GAME_OPTIONS_ROAD_VEHICLES_FRAME                            :{BLACK}Движение автомобилей
@@ -1467,6 +1462,8 @@ STR_CONFIG_SETTING_POPULATION_IN_LABEL                          :Показыв�
 STR_CONFIG_SETTING_POPULATION_IN_LABEL_HELPTEXT                 :Показывать количество жителей городов в названиях
 STR_CONFIG_SETTING_GRAPH_LINE_THICKNESS                         :Толщина линий графиков: {STRING}
 STR_CONFIG_SETTING_GRAPH_LINE_THICKNESS_HELPTEXT                :Толщина линий графиков. Тонкие линии более точны; толстые линии лучше видны и их цвета лучше различимы.
+STR_CONFIG_SETTING_SHOW_NEWGRF_NAME                             :Показывать имя NewGRF в окне покупки транспорта: {STRING}
+STR_CONFIG_SETTING_SHOW_NEWGRF_NAME_HELPTEXT                    :Показывать название модуля NewGRF, содержащего выбранную модель транспортного средства, в окне покупки транспорта.
 
 STR_CONFIG_SETTING_LANDSCAPE                                    :Тип карты: {STRING}
 STR_CONFIG_SETTING_LANDSCAPE_HELPTEXT                           :Выбор типа карты определяет основу игрового процесса, например, доступные типы транспорта и грузов, различные условия роста городов. Всё это также может быть изменено с помощью модулей NewGRF и игровых скриптов.
@@ -1645,7 +1642,7 @@ STR_CONFIG_SETTING_SCRIPT_MAX_OPCODES                           :Количес�
 STR_CONFIG_SETTING_SCRIPT_MAX_OPCODES_HELPTEXT                  :Максимальное количество операций, которое скрипт может выполнить за один цикл
 STR_CONFIG_SETTING_SCRIPT_MAX_MEMORY                            :Макс. объём памяти для скрипта: {STRING}
 STR_CONFIG_SETTING_SCRIPT_MAX_MEMORY_HELPTEXT                   :Объём памяти, который может использовать скрипт. При превышении этого объёма скрипт будет принудительно завершён. Для больших карт это значение, возможно, потребуется увеличить.
-STR_CONFIG_SETTING_SCRIPT_MAX_MEMORY_VALUE                      :{COMMA} Мбайт
+STR_CONFIG_SETTING_SCRIPT_MAX_MEMORY_VALUE                      :{COMMA} МиБ
 
 STR_CONFIG_SETTING_SERVINT_ISPERCENT                            :Интервал обслуживания в процентах: {STRING}
 STR_CONFIG_SETTING_SERVINT_ISPERCENT_HELPTEXT                   :Выберите, должно ли техническое обслуживание транспорта выполняться через определённые промежутки времени, либо при снижении надёжности транспортного средства на определённый процент от максимума
@@ -2324,6 +2321,7 @@ STR_NETWORK_ERROR_WRONG_PASSWORD                                :{WHITE}Неве
 STR_NETWORK_ERROR_SERVER_FULL                                   :{WHITE}Сервер переполнен
 STR_NETWORK_ERROR_SERVER_BANNED                                 :{WHITE}Вас забанили на этом сервере
 STR_NETWORK_ERROR_KICKED                                        :{WHITE}Вас выкинули из игры
+STR_NETWORK_ERROR_KICK_MESSAGE                                  :{WHITE}Причина: {STRING}
 STR_NETWORK_ERROR_CHEATER                                       :{WHITE}Чит-коды не разрешены на этом сервере
 STR_NETWORK_ERROR_TOO_MANY_COMMANDS                             :{WHITE}Вы посылали на сервер слишком много команд
 STR_NETWORK_ERROR_TIMEOUT_PASSWORD                              :{WHITE}Вы не успели ввести пароль
@@ -2383,6 +2381,7 @@ STR_NETWORK_MESSAGE_GIVE_MONEY                                  :*** {STRING} п
 STR_NETWORK_MESSAGE_GAVE_MONEY_AWAY                             :*** Вы передали {1:STRING} {2:CURRENCY_LONG}
 STR_NETWORK_MESSAGE_SERVER_SHUTDOWN                             :{WHITE}Сервер закрыл сессию
 STR_NETWORK_MESSAGE_SERVER_REBOOT                               :{WHITE}Сервер перезапускается...{}Пожалуйста, подождите...
+STR_NETWORK_MESSAGE_KICKED                                      :*** {STRING} был исключён из игры. Причина: ({STRING})
 
 # Content downloading window
 STR_CONTENT_TITLE                                               :{WHITE}Загрузка контента
@@ -2918,7 +2917,7 @@ STR_LAI_OBJECT_DESCRIPTION_COMPANY_OWNED_LAND                   :Земля в �
 STR_ABOUT_OPENTTD                                               :{WHITE}Об OpenTTD
 STR_ABOUT_ORIGINAL_COPYRIGHT                                    :{BLACK}Оригинальные авторские права {COPYRIGHT} 1995 Chris Sawyer. Все права защищены.
 STR_ABOUT_VERSION                                               :{BLACK}OpenTTD версия {REV}
-STR_ABOUT_COPYRIGHT_OPENTTD                                     :{BLACK}OpenTTD {COPYRIGHT} 2002-2019 Команда разработчиков OpenTTD
+STR_ABOUT_COPYRIGHT_OPENTTD                                     :{BLACK}OpenTTD {COPYRIGHT} 2002-{STRING} Команда разработчиков OpenTTD
 
 # Framerate display window
 STR_FRAMERATE_CAPTION                                           :{WHITE}Скорость игры
@@ -2928,7 +2927,7 @@ STR_FRAMERATE_RATE_GAMELOOP_TOOLTIP                             :{BLACK}Кол-�
 STR_FRAMERATE_RATE_BLITTER                                      :{BLACK}Вывод на экран: {STRING}
 STR_FRAMERATE_RATE_BLITTER_TOOLTIP                              :{BLACK}Кол-во отображаемых кадров в секунду.
 STR_FRAMERATE_SPEED_FACTOR                                      :{BLACK}Текущая скорость игры: {DECIMAL}x
-STR_FRAMERATE_SPEED_FACTOR_TOOLTIP                              :{BLACK}Фактическая скорость игры
+STR_FRAMERATE_SPEED_FACTOR_TOOLTIP                              :{BLACK}Фактическая скорость игры (по сравнению с ожидаемой скоростью при нормальной скорости симуляции).
 STR_FRAMERATE_CURRENT                                           :{WHITE}Сейчас
 STR_FRAMERATE_AVERAGE                                           :{WHITE}В среднем
 STR_FRAMERATE_MEMORYUSE                                         :{WHITE}Объём памяти
@@ -3585,6 +3584,10 @@ STR_INDUSTRY_DIRECTORY_ITEM_PROD2                               :{ORANGE}{INDUST
 STR_INDUSTRY_DIRECTORY_ITEM_PROD3                               :{ORANGE}{INDUSTRY} {STRING}, {STRING}, {STRING}
 STR_INDUSTRY_DIRECTORY_ITEM_PRODMORE                            :{ORANGE}{INDUSTRY} {STRING}, {STRING}, {STRING} и ещё {NUM}...
 STR_INDUSTRY_DIRECTORY_LIST_CAPTION                             :{BLACK}Список предприятий - щелчок по названию показывает предприятие в основном окне. Ctrl+щелчок показывает в дополнительном окне.
+STR_INDUSTRY_DIRECTORY_ACCEPTED_CARGO_FILTER                    :{BLACK}Принимаемый груз: {SILVER}{STRING}
+STR_INDUSTRY_DIRECTORY_PRODUCED_CARGO_FILTER                    :{BLACK}Производимый груз: {SILVER}{STRING}
+STR_INDUSTRY_DIRECTORY_FILTER_ALL_TYPES                         :Любой
+STR_INDUSTRY_DIRECTORY_FILTER_NONE                              :Отсутствует
 
 # Industry view
 STR_INDUSTRY_VIEW_CAPTION                                       :{WHITE}{INDUSTRY}
@@ -4371,6 +4374,14 @@ STR_AI_LIST_ACCEPT_TOOLTIP                                      :{BLACK}Выбр
 STR_AI_LIST_CANCEL                                              :{BLACK}Отмена
 STR_AI_LIST_CANCEL_TOOLTIP                                      :{BLACK}Не менять скрипт
 
+STR_SCREENSHOT_CAPTION                                          :{WHITE}Снимок экрана
+STR_SCREENSHOT_SCREENSHOT                                       :{BLACK}Обычный снимок
+STR_SCREENSHOT_ZOOMIN_SCREENSHOT                                :{BLACK}Видимая область в максимальном приближении
+STR_SCREENSHOT_DEFAULTZOOM_SCREENSHOT                           :{BLACK}Видимая область в обычном масштабе
+STR_SCREENSHOT_WORLD_SCREENSHOT                                 :{BLACK}Снимок всей карты
+STR_SCREENSHOT_HEIGHTMAP_SCREENSHOT                             :{BLACK}Снимок карты высот
+STR_SCREENSHOT_MINIMAP_SCREENSHOT                               :{BLACK}Снимок миникарты
+
 # AI Parameters
 STR_AI_SETTINGS_CAPTION                                         :{WHITE}Параметры {STRING}
 STR_AI_SETTINGS_CAPTION_AI                                      :ИИ
@@ -4454,10 +4465,10 @@ STR_WARNING_FALLBACK_SOUNDSET                                   :{WHITE}Теку
 
 # Screenshot related messages
 STR_WARNING_SCREENSHOT_SIZE_CAPTION                             :{WHITE}Огромный снимок экрана
-STR_WARNING_SCREENSHOT_SIZE_MESSAGE                             :{YELLOW}Снимок экрана будет иметь размер {COMMA} х {COMMA} пикселей. Его создание займёт некоторое время. Продолжить?
+STR_WARNING_SCREENSHOT_SIZE_MESSAGE                             :{YELLOW}Снимок экрана будет иметь размер {COMMA}{NBSP}х{NBSP}{COMMA}{NBSP}пиксел{P ь я ей}. Его создание займёт некоторое время. Продолжить?
 
 STR_MESSAGE_SCREENSHOT_SUCCESSFULLY                             :{WHITE}Снимок экрана сохранён под именем «{STRING}»
-STR_ERROR_SCREENSHOT_FAILED                                     :{WHITE}Не удалось сохранить снимок экрана
+STR_ERROR_SCREENSHOT_FAILED                                     :{WHITE}Не удалось сделать снимок экрана
 
 # Error message titles
 STR_ERROR_MESSAGE_CAPTION                                       :{YELLOW}Сообщение
@@ -4667,7 +4678,6 @@ STR_ERROR_CAN_T_CONVERT_ROAD                                    :{WHITE}Здес
 STR_ERROR_CAN_T_CONVERT_TRAMWAY                                 :{WHITE}Невозможно сменить тип трамвайных рельсов...
 STR_ERROR_NO_SUITABLE_ROAD                                      :{WHITE}Нет подходящего дорожного полотна
 STR_ERROR_NO_SUITABLE_TRAMWAY                                   :{WHITE}Нет подходящих трамвайных путей
-STR_ERROR_INCOMPATIBLE_ROAD                                     :{WHITE}... несовместимый тип дороги
 STR_ERROR_INCOMPATIBLE_TRAMWAY                                  :{WHITE}... несовместимый тип трамвайных путей
 
 # Waterway construction errors

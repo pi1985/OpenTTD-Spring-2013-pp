@@ -204,7 +204,7 @@ Industry::~Industry()
  */
 void Industry::PostDestructor(size_t index)
 {
-	InvalidateWindowData(WC_INDUSTRY_DIRECTORY, 0, 0);
+	InvalidateWindowData(WC_INDUSTRY_DIRECTORY, 0, IDIWD_FORCE_REBUILD);
 }
 
 
@@ -1697,20 +1697,12 @@ static void PopulateStationsNearby(Industry *ind)
 		return;
 	}
 
-	/* Get our list of nearby stations. */
-	FindStationsAroundTiles(ind->location, &ind->stations_near, false);
-
-	/* Test if industry can accept cargo */
-	uint cargo_index;
-	for (cargo_index = 0; cargo_index < lengthof(ind->accepts_cargo); cargo_index++) {
-		if (ind->accepts_cargo[cargo_index] != CT_INVALID) break;
-	}
-	if (cargo_index >= lengthof(ind->accepts_cargo)) return;
-
-	/* Cargo is accepted, add industry to nearby stations nearby industry list. */
-	for (Station *st : ind->stations_near) {
-		st->industries_near.insert(ind);
-	}
+	ForAllStationsAroundTiles(ind->location, [ind](Station *st, TileIndex tile) {
+		if (!IsTileType(tile, MP_INDUSTRY) || GetIndustryIndex(tile) != ind->index) return false;
+		ind->stations_near.insert(st);
+		st->AddIndustryToDeliver(ind);
+		return true;
+	});
 }
 
 /**
@@ -1900,7 +1892,7 @@ static void DoCreateNewIndustry(Industry *i, TileIndex tile, IndustryType type, 
 	if (GetIndustrySpec(i->type)->behaviour & INDUSTRYBEH_PLANT_ON_BUILT) {
 		for (uint j = 0; j != 50; j++) PlantRandomFarmField(i);
 	}
-	InvalidateWindowData(WC_INDUSTRY_DIRECTORY, 0, 0);
+	InvalidateWindowData(WC_INDUSTRY_DIRECTORY, 0, IDIWD_FORCE_REBUILD);
 
 	if (!_generating_world) PopulateStationsNearby(i);
 }
@@ -2319,6 +2311,21 @@ void Industry::RecomputeProductionMultipliers()
 	}
 }
 
+void Industry::FillCachedName() const
+{
+	char buf[256];
+	int64 args_array[] = { this->index };
+	StringParameters tmp_params(args_array);
+	char *end = GetStringWithArgs(buf, STR_INDUSTRY_NAME, &tmp_params, lastof(buf));
+	this->cached_name.assign(buf, end);
+}
+
+void ClearAllIndustryCachedNames()
+{
+	for (Industry *ind : Industry::Iterate()) {
+		ind->cached_name.clear();
+	}
+}
 
 /**
  * Set the #probability and #min_number fields for the industry type \a it for a running game.
@@ -2670,7 +2677,7 @@ static void ChangeIndustryProduction(Industry *i, bool monthly)
 				/* Prevent production to overflow or Oil Rig passengers to be over-"produced" */
 				new_prod = Clamp(new_prod, 1, 255);
 
-				if (((indspec->behaviour & INDUSTRYBEH_BUILT_ONWATER) != 0) && j == 1) {
+				if (((indspec->behaviour & INDUSTRYBEH_BUILT_ONWATER) != 0) && j == 1 && !(indspec->behaviour & INDUSTRYBEH_WATER_NO_CLAMP_PROD)) {
 					new_prod = Clamp(new_prod, 0, 16);
 				}
 
@@ -2829,7 +2836,7 @@ void IndustryDailyLoop()
 	cur_company.Restore();
 
 	/* production-change */
-	InvalidateWindowData(WC_INDUSTRY_DIRECTORY, 0, 1);
+	InvalidateWindowData(WC_INDUSTRY_DIRECTORY, 0, IDIWD_PRODUCTION_CHANGE);
 }
 
 void IndustryMonthlyLoop()
@@ -2851,7 +2858,7 @@ void IndustryMonthlyLoop()
 	cur_company.Restore();
 
 	/* production-change */
-	InvalidateWindowData(WC_INDUSTRY_DIRECTORY, 0, 1);
+	InvalidateWindowData(WC_INDUSTRY_DIRECTORY, 0, IDIWD_PRODUCTION_CHANGE);
 }
 
 

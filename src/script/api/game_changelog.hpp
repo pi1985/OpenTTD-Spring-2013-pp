@@ -13,9 +13,20 @@
  * functions may still be available if you return an older API version
  * in GetAPIVersion() in info.nut.
  *
- * \b 1.10.0
+ * \b 1.11.0
  *
  * This version is not yet released. The following changes are not set in stone yet.
+ *
+ * API additions:
+ * \li GSEventStoryPageButtonClick
+ * \li GSEventStoryPageTileSelect
+ * \li GSEventStoryPageVehicleSelect
+ * \li GSStoryPage::MakePushButtonReference
+ * \li GSStoryPage::MakeTileButtonReference
+ * \li GSStoryPage::MakeVehicleButtonReference
+ * \li GSPriorityQueue
+ *
+ * \b 1.10.0
  *
  * API additions:
  * \li GSVehicle::BuildVehicleWithRefit
@@ -25,6 +36,8 @@
  * \li GSRoad::RoadVehHasPowerOnRoad
  * \li GSRoad::ConvertRoadType
  * \li GSRoad::GetMaxSpeed
+ * \li GSEngine::EnableForCompany
+ * \li GSEngine::DisableForCompany
  *
  * \b 1.9.0
  *

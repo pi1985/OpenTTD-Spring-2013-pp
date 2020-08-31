@@ -7,8 +7,6 @@
 
 /** @file xaudio2_s.cpp XAudio2 sound driver. */
 
-#ifdef WITH_XAUDIO2
-
 #include "../stdafx.h"
 #include "../openttd.h"
 #include "../driver.h"
@@ -126,7 +124,7 @@ static StreamingVoiceContext* _voice_context = nullptr;
 * @return An error message if unsuccessful, or nullptr otherwise.
 *
 */
-const char *SoundDriver_XAudio2::Start(const char * const *parm)
+const char *SoundDriver_XAudio2::Start(const StringList &parm)
 {
 	HRESULT hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
@@ -267,5 +265,3 @@ void SoundDriver_XAudio2::Stop()
 	FreeLibrary(_xaudio_dll_handle);
 	CoUninitialize();
 }
-
-#endif

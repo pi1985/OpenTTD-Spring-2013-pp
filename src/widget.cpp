@@ -774,7 +774,7 @@ void NWidgetBase::SetDirty(const Window *w) const
 {
 	int abs_left = w->left + this->pos_x;
 	int abs_top = w->top + this->pos_y;
-	SetDirtyBlocks(abs_left, abs_top, abs_left + this->current_x, abs_top + this->current_y);
+	AddDirtyBlock(abs_left, abs_top, abs_left + this->current_x, abs_top + this->current_y);
 }
 
 /**
@@ -1933,7 +1933,7 @@ void NWidgetViewport::InitializeViewport(Window *w, uint32 follow_flags, ZoomLev
  */
 void NWidgetViewport::UpdateViewportCoordinates(Window *w)
 {
-	ViewPort *vp = w->viewport;
+	Viewport *vp = w->viewport;
 	if (vp != nullptr) {
 		vp->left = w->left + this->pos_x;
 		vp->top  = w->top + this->pos_y;

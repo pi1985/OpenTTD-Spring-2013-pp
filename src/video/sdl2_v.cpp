@@ -170,9 +170,7 @@ static void DrawSurfaceToScreen()
 	} else {
 		if (_sdl_surface != _sdl_realscreen) {
 			for (int i = 0; i < n; i++) {
-				SDL_BlitSurface(
-					_sdl_surface, &_dirty_rects[i],
-					_sdl_realscreen, &_dirty_rects[i]);
+				SDL_BlitSurface(_sdl_surface, &_dirty_rects[i], _sdl_realscreen, &_dirty_rects[i]);
 			}
 		}
 
@@ -260,12 +258,10 @@ bool VideoDriver_SDL::CreateMainSurface(uint w, uint h, bool resize)
 	seprintf(caption, lastof(caption), "OpenTTD %s", _openttd_revision);
 
 	if (_sdl_window == nullptr) {
-		Uint32 flags = SDL_WINDOW_SHOWN;
+		Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
 
 		if (_fullscreen) {
 			flags |= SDL_WINDOW_FULLSCREEN;
-		} else {
-			flags |= SDL_WINDOW_RESIZABLE;
 		}
 
 		_sdl_window = SDL_CreateWindow(
@@ -626,7 +622,7 @@ int VideoDriver_SDL::PollEvent()
 	return -1;
 }
 
-const char *VideoDriver_SDL::Start(const char * const *parm)
+const char *VideoDriver_SDL::Start(const StringList &parm)
 {
 	/* Explicitly disable hardware acceleration. Enabling this causes
 	 * UpdateWindowSurface() to update the window's texture instead of
@@ -647,12 +643,12 @@ const char *VideoDriver_SDL::Start(const char * const *parm)
 		return SDL_GetError();
 	}
 
-	const char *dname = SDL_GetVideoDriver(0);
+	const char *dname = SDL_GetCurrentVideoDriver();
 	DEBUG(driver, 1, "SDL2: using driver '%s'", dname);
 
 	MarkWholeScreenDirty();
 
-	_draw_threaded = GetDriverParam(parm, "no_threads") == nullptr && GetDriverParam(parm, "no_thread") == nullptr;
+	_draw_threaded = !GetDriverParamBool(parm, "no_threads") && !GetDriverParamBool(parm, "no_thread");
 
 	SDL_StopTextInput();
 	this->edit_box_focused = false;

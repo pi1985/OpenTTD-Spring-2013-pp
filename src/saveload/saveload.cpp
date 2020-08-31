@@ -44,6 +44,7 @@
 #include "../fios.h"
 #include "../error.h"
 #include <atomic>
+#include <string>
 
 #include "table/strings.h"
 
@@ -341,6 +342,10 @@ void NORETURN SlError(StringID string, const char *extra_msg)
 	 * when we access them during cleaning the pool dereferences of
 	 * those indices will be made with segmentation faults as result. */
 	if (_sl.action == SLA_LOAD || _sl.action == SLA_PTRS) SlNullPointers();
+
+	/* Logging could be active. */
+	GamelogStopAnyAction();
+
 	throw std::exception();
 }
 
@@ -460,16 +465,6 @@ static inline void SlWriteUint64(uint64 x)
 {
 	SlWriteUint32((uint32)(x >> 32));
 	SlWriteUint32((uint32)x);
-}
-
-/**
- * Read in bytes from the file/data structure but don't do
- * anything with them, discarding them in effect
- * @param length The amount of bytes that is being treated this way
- */
-static inline void SlSkipBytes(size_t length)
-{
-	for (; length != 0; length--) SlReadByte();
 }
 
 /**
@@ -788,7 +783,7 @@ void WriteValue(void *ptr, VarType conv, int64 val)
 		case SLE_VAR_U32: *(uint32*)ptr = val; break;
 		case SLE_VAR_I64: *(int64 *)ptr = val; break;
 		case SLE_VAR_U64: *(uint64*)ptr = val; break;
-		case SLE_VAR_NAME: *(char**)ptr = CopyFromOldName(val); break;
+		case SLE_VAR_NAME: *reinterpret_cast<std::string *>(ptr) = CopyFromOldName(val); break;
 		case SLE_VAR_NULL: break;
 		default: NOT_REACHED();
 	}
@@ -898,6 +893,21 @@ static inline size_t SlCalcStringLen(const void *ptr, size_t length, VarType con
 }
 
 /**
+ * Calculate the gross length of the string that it
+ * will occupy in the savegame. This includes the real length, returned
+ * by SlCalcNetStringLen and the length that the index will occupy.
+ * @param ptr Pointer to the \c std::string.
+ * @return The gross length of the string.
+ */
+static inline size_t SlCalcStdStringLen(const void *ptr)
+{
+	const std::string *str = reinterpret_cast<const std::string *>(ptr);
+
+	size_t len = str->length();
+	return len + SlGetArrayLength(len); // also include the length of the index
+}
+
+/**
  * Save/Load a string.
  * @param ptr the string being manipulated
  * @param length of the string (full length)
@@ -970,6 +980,53 @@ static void SlString(void *ptr, size_t length, VarType conv)
 			str_validate((char *)ptr, (char *)ptr + len, settings);
 			break;
 		}
+		case SLA_PTRS: break;
+		case SLA_NULL: break;
+		default: NOT_REACHED();
+	}
+}
+
+/**
+ * Save/Load a \c std::string.
+ * @param ptr the string being manipulated
+ * @param conv must be SLE_FILE_STRING
+ */
+static void SlStdString(void *ptr, VarType conv)
+{
+	std::string *str = reinterpret_cast<std::string *>(ptr);
+
+	switch (_sl.action) {
+		case SLA_SAVE: {
+			size_t len = str->length();
+			SlWriteArrayLength(len);
+			SlCopyBytes(const_cast<void *>(static_cast<const void *>(str->c_str())), len);
+			break;
+		}
+
+		case SLA_LOAD_CHECK:
+		case SLA_LOAD: {
+			size_t len = SlReadArrayLength();
+			char *buf = AllocaM(char, len + 1);
+
+			SlCopyBytes(buf, len);
+			buf[len] = '\0'; // properly terminate the string
+
+			StringValidationSettings settings = SVS_REPLACE_WITH_QUESTION_MARK;
+			if ((conv & SLF_ALLOW_CONTROL) != 0) {
+				settings = settings | SVS_ALLOW_CONTROL_CODE;
+				if (IsSavegameVersionBefore(SLV_169)) {
+					str_fix_scc_encoded(buf, buf + len);
+				}
+			}
+			if ((conv & SLF_ALLOW_NEWLINE) != 0) {
+				settings = settings | SVS_ALLOW_NEWLINE;
+			}
+			str_validate(buf, buf + len, settings);
+
+			// Store sanitized string.
+			str->assign(buf);
+		}
+
 		case SLA_PTRS: break;
 		case SLA_NULL: break;
 		default: NOT_REACHED();
@@ -1399,6 +1456,7 @@ size_t SlCalcObjMemberLength(const void *object, const SaveLoad *sld)
 		case SL_STR:
 		case SL_LST:
 		case SL_DEQUE:
+		case SL_STDSTR:
 			/* CONDITIONAL saveload types depend on the savegame version */
 			if (!SlIsObjectValidInSavegame(sld)) break;
 
@@ -1409,6 +1467,7 @@ size_t SlCalcObjMemberLength(const void *object, const SaveLoad *sld)
 				case SL_STR: return SlCalcStringLen(GetVariableAddress(object, sld), sld->length, sld->conv);
 				case SL_LST: return SlCalcListLen(GetVariableAddress(object, sld));
 				case SL_DEQUE: return SlCalcDequeLen(GetVariableAddress(object, sld), sld->conv);
+				case SL_STDSTR: return SlCalcStdStringLen(GetVariableAddress(object, sld));
 				default: NOT_REACHED();
 			}
 			break;
@@ -1446,6 +1505,8 @@ static bool IsVariableSizeRight(const SaveLoad *sld)
 				case SLE_VAR_I64:
 				case SLE_VAR_U64:
 					return sld->size == sizeof(int64);
+				case SLE_VAR_NAME:
+					return sld->size == sizeof(std::string);
 				default:
 					return sld->size == sizeof(void *);
 			}
@@ -1456,6 +1517,10 @@ static bool IsVariableSizeRight(const SaveLoad *sld)
 		case SL_STR:
 			/* These should be pointer sized, or fixed array. */
 			return sld->size == sizeof(void *) || sld->size == sld->length;
+
+		case SL_STDSTR:
+			/* These should be all pointers to std::string. */
+			return sld->size == sizeof(std::string);
 
 		default:
 			return true;
@@ -1478,6 +1543,7 @@ bool SlObjectMember(void *ptr, const SaveLoad *sld)
 		case SL_STR:
 		case SL_LST:
 		case SL_DEQUE:
+		case SL_STDSTR:
 			/* CONDITIONAL saveload types depend on the savegame version */
 			if (!SlIsObjectValidInSavegame(sld)) return false;
 			if (SlSkipVariableOnLoad(sld)) return false;
@@ -1506,6 +1572,7 @@ bool SlObjectMember(void *ptr, const SaveLoad *sld)
 				case SL_STR: SlString(ptr, sld->length, sld->conv); break;
 				case SL_LST: SlList(ptr, (SLRefType)conv); break;
 				case SL_DEQUE: SlDeque(ptr, conv); break;
+				case SL_STDSTR: SlStdString(ptr, sld->conv); break;
 				default: NOT_REACHED();
 			}
 			break;
@@ -2378,6 +2445,16 @@ extern bool AfterLoadGame();
 extern bool LoadOldSaveGame(const char *file);
 
 /**
+ * Clear temporary data that is passed between various saveload phases.
+ */
+static void ResetSaveloadData()
+{
+	ResetTempEngineData();
+	ResetLabelMaps();
+	ResetOldWaypoints();
+}
+
+/**
  * Clear/free saveload state.
  */
 static inline void ClearSaveLoadState()
@@ -2623,6 +2700,8 @@ static SaveOrLoadResult DoLoad(LoadFilter *reader, bool load_check)
 	_next_offs = 0;
 
 	if (!load_check) {
+		ResetSaveloadData();
+
 		/* Old maps were hardcoded to 256x256 and thus did not contain
 		 * any mapsize information. Pre-initialize to 256x256 to not to
 		 * confuse old games */
@@ -2727,6 +2806,8 @@ SaveOrLoadResult SaveOrLoad(const char *filename, SaveLoadOperation fop, Detaile
 	try {
 		/* Load a TTDLX or TTDPatch game */
 		if (fop == SLO_LOAD && dft == DFT_OLD_GAME_FILE) {
+			ResetSaveloadData();
+
 			InitializeGame(256, 256, true, true); // set a mapsize of 256x256 for TTDPatch games or it might get confused
 
 			/* TTD/TTO savegames have no NewGRFs, TTDP savegame have them

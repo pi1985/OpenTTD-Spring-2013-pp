@@ -389,7 +389,7 @@ QueryString *Window::GetQueryString(uint widnum)
  */
 /* virtual */ Point Window::GetCaretPosition() const
 {
-	if (this->nested_focus != nullptr && this->nested_focus->type == WWT_EDITBOX) {
+	if (this->nested_focus != nullptr && this->nested_focus->type == WWT_EDITBOX && !this->querystrings.empty()) {
 		return this->GetQueryString(this->nested_focus->index)->GetCaretPosition(this, this->nested_focus->index);
 	}
 
@@ -655,7 +655,7 @@ static void DispatchLeftClickEvent(Window *w, int x, int y, int click_count)
 	WidgetType widget_type = (nw != nullptr) ? nw->type : WWT_EMPTY;
 
 	bool focused_widget_changed = false;
-	/* If clicked on a window that previously did dot have focus */
+	/* If clicked on a window that previously did not have focus */
 	if (_focused_window != w &&                 // We already have focus, right?
 			(w->window_desc->flags & WDF_NO_FOCUS) == 0 &&  // Don't lose focus to toolbars
 			widget_type != WWT_CLOSEBOX) {          // Don't change focused window if 'X' (close button) was clicked
@@ -983,7 +983,7 @@ void DrawOverlappedWindowForAll(int left, int top, int right, int bottom)
  */
 void Window::SetDirty() const
 {
-	SetDirtyBlocks(this->left, this->top, this->left + this->width, this->top + this->height);
+	AddDirtyBlock(this->left, this->top, this->left + this->width, this->top + this->height);
 }
 
 /**
@@ -1093,6 +1093,9 @@ Window::~Window()
 
 	/* We can't scroll the window when it's closed. */
 	if (_last_scroll_window == this) _last_scroll_window = nullptr;
+
+	/* Make sure we don't try to access non-existing query strings. */
+	this->querystrings.clear();
 
 	/* Make sure we don't try to access this window as the focused window when it doesn't exist anymore. */
 	if (_focused_window == this) {
@@ -2786,7 +2789,7 @@ static void HandleAutoscroll()
 	if (w == nullptr || w->flags & WF_DISABLE_VP_SCROLL) return;
 	if (_settings_client.gui.auto_scrolling != VA_EVERY_VIEWPORT && w->window_class != WC_MAIN_WINDOW) return;
 
-	ViewPort *vp = IsPtInWindowViewport(w, x, y);
+	Viewport *vp = IsPtInWindowViewport(w, x, y);
 	if (vp == nullptr) return;
 
 	x -= vp->left;
@@ -2896,7 +2899,7 @@ static void MouseLoop(MouseClick click, int mousewheel)
 	if (w == nullptr) return;
 
 	if (click != MC_HOVER && !MaybeBringWindowToFront(w)) return;
-	ViewPort *vp = IsPtInWindowViewport(w, x, y);
+	Viewport *vp = IsPtInWindowViewport(w, x, y);
 
 	/* Don't allow any action in a viewport if either in menu or when having a modal progress window */
 	if (vp != nullptr && (_game_mode == GM_MENU || HasModalProgress())) return;
@@ -3490,7 +3493,7 @@ static int PositionWindow(Window *w, WindowClass clss, int setting)
 		default: w->left = 0; break;
 	}
 	if (w->viewport != nullptr) w->viewport->left += w->left - old_left;
-	SetDirtyBlocks(0, w->top, _screen.width, w->top + w->height); // invalidate the whole row
+	AddDirtyBlock(0, w->top, _screen.width, w->top + w->height); // invalidate the whole row
 	return w->left;
 }
 

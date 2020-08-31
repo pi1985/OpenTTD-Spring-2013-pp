@@ -67,7 +67,6 @@ assert_compile(lengthof(_orig_rail_vehicle_info) + lengthof(_orig_road_vehicle_i
 const uint EngineOverrideManager::NUM_DEFAULT_ENGINES = _engine_counts[VEH_TRAIN] + _engine_counts[VEH_ROAD] + _engine_counts[VEH_SHIP] + _engine_counts[VEH_AIRCRAFT];
 
 Engine::Engine() :
-	name(nullptr),
 	overrides_count(0),
 	overrides(nullptr)
 {
@@ -140,7 +139,6 @@ Engine::Engine(VehicleType type, EngineID base)
 Engine::~Engine()
 {
 	UnloadWagonOverrides(this);
-	free(this->name);
 }
 
 /**
@@ -710,11 +708,11 @@ void StartupEngines()
 }
 
 /**
- * Company \a company accepts engine \a eid for preview.
- * @param eid Engine being accepted (is under preview).
- * @param company Current company previewing the engine.
+ * Allows engine \a eid to be used by a company \a company.
+ * @param eid The engine to enable.
+ * @param company The company to allow using the engine.
  */
-static void AcceptEnginePreview(EngineID eid, CompanyID company)
+static void EnableEngineForCompany(EngineID eid, CompanyID company)
 {
 	Engine *e = Engine::Get(eid);
 	Company *c = Company::Get(company);
@@ -728,15 +726,45 @@ static void AcceptEnginePreview(EngineID eid, CompanyID company)
 		c->avail_roadtypes = AddDateIntroducedRoadTypes(c->avail_roadtypes | GetRoadTypeInfo(e->u.road.roadtype)->introduces_roadtypes, _date);
 	}
 
-	e->preview_company = INVALID_COMPANY;
-	e->preview_asked = (CompanyMask)-1;
+	if (company == _local_company) {
+		AddRemoveEngineFromAutoreplaceAndBuildWindows(e->type);
+
+		/* Update the toolbar. */
+		InvalidateWindowData(WC_MAIN_TOOLBAR, 0);
+		if (e->type == VEH_ROAD) InvalidateWindowData(WC_BUILD_TOOLBAR, TRANSPORT_ROAD);
+		if (e->type == VEH_SHIP) InvalidateWindowData(WC_BUILD_TOOLBAR, TRANSPORT_WATER);
+	}
+}
+
+/**
+ * Forbids engine \a eid to be used by a company \a company.
+ * @param eid The engine to disable.
+ * @param company The company to forbid using the engine.
+ */
+static void DisableEngineForCompany(EngineID eid, CompanyID company)
+{
+	Engine *e = Engine::Get(eid);
+
+	ClrBit(e->company_avail, company);
+
 	if (company == _local_company) {
 		AddRemoveEngineFromAutoreplaceAndBuildWindows(e->type);
 	}
+}
 
-	/* Update the toolbar. */
-	if (e->type == VEH_ROAD) InvalidateWindowData(WC_BUILD_TOOLBAR, TRANSPORT_ROAD);
-	if (e->type == VEH_SHIP) InvalidateWindowData(WC_BUILD_TOOLBAR, TRANSPORT_WATER);
+/**
+ * Company \a company accepts engine \a eid for preview.
+ * @param eid Engine being accepted (is under preview).
+ * @param company Current company previewing the engine.
+ */
+static void AcceptEnginePreview(EngineID eid, CompanyID company)
+{
+	Engine *e = Engine::Get(eid);
+
+	e->preview_company = INVALID_COMPANY;
+	e->preview_asked = (CompanyMask)-1;
+
+	EnableEngineForCompany(eid, company);
 
 	/* Notify preview window, that it might want to close.
 	 * Note: We cannot directly close the window.
@@ -892,6 +920,37 @@ CommandCost CmdWantEnginePreview(TileIndex tile, DoCommandFlag flags, uint32 p1,
 }
 
 /**
+ * Allow or forbid a specific company to use an engine
+ * @param tile unused
+ * @param flags operation to perform
+ * @param p1 engine id
+ * @param p2 various bitstuffed elements
+ * - p2 = (bit  0 - 7) - Company to allow/forbid the use of an engine.
+ * - p2 = (bit 31) - 0 to forbid, 1 to allow.
+ * @param text unused
+ * @return the cost of this operation or an error
+ */
+CommandCost CmdEngineCtrl(TileIndex tile, DoCommandFlag flags, uint32 p1, uint32 p2, const char *text)
+{
+	if (_current_company != OWNER_DEITY) return CMD_ERROR;
+	EngineID engine_id = (EngineID)p1;
+	CompanyID company_id = (CompanyID)GB(p2, 0, 8);
+	bool allow = HasBit(p2, 31);
+
+	if (!Engine::IsValidID(engine_id) || !Company::IsValidID(company_id)) return CMD_ERROR;
+
+	if (flags & DC_EXEC) {
+		if (allow) {
+			EnableEngineForCompany(engine_id, company_id);
+		} else {
+			DisableEngineForCompany(engine_id, company_id);
+		}
+	}
+
+	return CommandCost();
+}
+
+/**
  * An engine has become available for general use.
  * Also handle the exclusive engine preview contract.
  * @param e Engine generally available as of now.
@@ -1008,7 +1067,7 @@ void EnginesMonthlyLoop()
 static bool IsUniqueEngineName(const char *name)
 {
 	for (const Engine *e : Engine::Iterate()) {
-		if (e->name != nullptr && strcmp(e->name, name) == 0) return false;
+		if (!e->name.empty() && e->name == name) return false;
 	}
 
 	return true;
@@ -1036,12 +1095,10 @@ CommandCost CmdRenameEngine(TileIndex tile, DoCommandFlag flags, uint32 p1, uint
 	}
 
 	if (flags & DC_EXEC) {
-		free(e->name);
-
 		if (reset) {
-			e->name = nullptr;
+			e->name.clear();
 		} else {
-			e->name = stredup(text);
+			e->name = text;
 		}
 
 		MarkWholeScreenDirty();

@@ -583,7 +583,7 @@ STR_FILE_MENU_EXIT                                              :Fàg an-seo
 
 # map menu
 STR_MAP_MENU_MAP_OF_WORLD                                       :Mapa an t-saoghail
-STR_MAP_MENU_EXTRA_VIEW_PORT                                    :Port-seallaidh a bharrachd
+STR_MAP_MENU_EXTRA_VIEWPORT                                     :Port-seallaidh a bharrachd
 STR_MAP_MENU_LINGRAPH_LEGEND                                    :Clàr-mìneachaidh an t-srutha carago
 STR_MAP_MENU_SIGN_LIST                                          :Liosta nan sanas
 
@@ -658,9 +658,6 @@ STR_ABOUT_MENU_SEPARATOR                                        :
 STR_ABOUT_MENU_TOGGLE_CONSOLE                                   :Toglaich a' chonsoil
 STR_ABOUT_MENU_AI_DEBUG                                         :Dì-bhugaich IF/sgriobt geama
 STR_ABOUT_MENU_SCREENSHOT                                       :Glacadh-sgrìn
-STR_ABOUT_MENU_ZOOMIN_SCREENSHOT                                :Glacadh-sgrìn le sùmadh a-steach as motha
-STR_ABOUT_MENU_DEFAULTZOOM_SCREENSHOT                           :Glacadh-sgrìn le sùmadh a-steach bunaiteach
-STR_ABOUT_MENU_GIANT_SCREENSHOT                                 :Glacadh-sgrìn leis a' mhapa shlàn
 STR_ABOUT_MENU_ABOUT_OPENTTD                                    :Mu dheidhinn “OpenTTD"
 STR_ABOUT_MENU_SPRITE_ALIGNER                                   :Co-thaobhaichear nan sprite
 STR_ABOUT_MENU_TOGGLE_BOUNDING_BOXES                            :Toglaich bogsaichean-iadhaidh
@@ -841,9 +838,6 @@ STR_MUSIC_PLAYLIST_CUSTOM_1                                     :{TINY_FONT}{BLA
 STR_MUSIC_PLAYLIST_CUSTOM_2                                     :{TINY_FONT}{BLACK}Gnàthaichte 2
 STR_MUSIC_MUSIC_VOLUME                                          :{TINY_FONT}{BLACK}Àirde a' chiùil
 STR_MUSIC_EFFECTS_VOLUME                                        :{TINY_FONT}{BLACK}Àirde nan èifeachdan fuaime
-STR_MUSIC_RULER_MIN                                             :{TINY_FONT}{BLACK}As lugha
-STR_MUSIC_RULER_MAX                                             :{TINY_FONT}{BLACK}As motha
-STR_MUSIC_RULER_MARKER                                          :{TINY_FONT}{BLACK}'
 STR_MUSIC_TRACK_NONE                                            :{TINY_FONT}{DKGREEN}--
 STR_MUSIC_TRACK_DIGIT                                           :{TINY_FONT}{DKGREEN}{ZEROFILL_NUM}
 STR_MUSIC_TITLE_NONE                                            :{TINY_FONT}{DKGREEN}------
@@ -1080,7 +1074,7 @@ STR_NEWS_EXCLUSIVE_RIGHTS_TITLE                                 :{BIG_FONT}{BLAC
 STR_NEWS_EXCLUSIVE_RIGHTS_DESCRIPTION                           :{BIG_FONT}{BLACK}Chuir an t-ùghdarras ionadail aig {TOWN} a làimh ri cùmhnant le {STRING} air còraichean giùlain às-dùnach fad bliadhna!
 
 # Extra view window
-STR_EXTRA_VIEW_PORT_TITLE                                       :{WHITE}Port-seallaidh {COMMA}
+STR_EXTRA_VIEWPORT_TITLE                                        :{WHITE}Port-seallaidh {COMMA}
 STR_EXTRA_VIEW_MOVE_VIEW_TO_MAIN                                :{BLACK}Atharraich am port-seallaidh
 STR_EXTRA_VIEW_MOVE_VIEW_TO_MAIN_TT                             :{BLACK}Cuir lethbhreac dhen ionad air a' phrìomh shealladh sa phort-seallaidh seo
 STR_EXTRA_VIEW_MOVE_MAIN_TO_VIEW                                :{BLACK}Atharraich am prìomh phort-seallaidh
@@ -2928,7 +2922,7 @@ STR_LAI_OBJECT_DESCRIPTION_COMPANY_OWNED_LAND                   :Tìr a' chompan
 STR_ABOUT_OPENTTD                                               :{WHITE}Mu dheidhinn OpenTTD
 STR_ABOUT_ORIGINAL_COPYRIGHT                                    :{BLACK}Còir-lethbhreac tùsail {COPYRIGHT} 1995 Chris Sawyer, a h-uile còir glèidhte
 STR_ABOUT_VERSION                                               :{BLACK}OpenTTD tionndadh {REV}
-STR_ABOUT_COPYRIGHT_OPENTTD                                     :{BLACK}OpenTTD {COPYRIGHT} 2002-2019 An sgioba OpenTTD
+STR_ABOUT_COPYRIGHT_OPENTTD                                     :{BLACK}OpenTTD {COPYRIGHT} 2002-{STRING} An sgioba OpenTTD
 
 # Framerate display window
 STR_FRAMERATE_CAPTION                                           :{WHITE}Reat fhrèamaichean
@@ -4294,6 +4288,7 @@ STR_AI_LIST_ACCEPT                                              :{BLACK}Gabh ris
 STR_AI_LIST_ACCEPT_TOOLTIP                                      :{BLACK}Cleachd an sgriobt a thagh thu
 STR_AI_LIST_CANCEL                                              :{BLACK}Sguir dheth
 STR_AI_LIST_CANCEL_TOOLTIP                                      :{BLACK}Na atharraich an sgriobt
+
 
 # AI Parameters
 STR_AI_SETTINGS_CAPTION                                         :{WHITE}Paramadairean aig {STRING}

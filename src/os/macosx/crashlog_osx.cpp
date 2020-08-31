@@ -12,6 +12,7 @@
 #include "../../string_func.h"
 #include "../../gamelog.h"
 #include "../../saveload/saveload.h"
+#include "../../video/video_driver.hpp"
 #include "macos.h"
 
 #include <errno.h>
@@ -62,10 +63,12 @@ class CrashLogOSX : public CrashLog {
 				" Name:     Mac OS X\n"
 				" Release:  %d.%d.%d\n"
 				" Machine:  %s\n"
-				" Min Ver:  %d\n",
+				" Min Ver:  %d\n"
+				" Max Ver:  %d\n",
 				ver_maj, ver_min, ver_bug,
 				arch != nullptr ? arch->description : "unknown",
-				MAC_OS_X_VERSION_MIN_REQUIRED
+				MAC_OS_X_VERSION_MIN_REQUIRED,
+				MAC_OS_X_VERSION_MAX_ALLOWED
 		);
 	}
 
@@ -240,7 +243,9 @@ void CDECL HandleCrash(int signum)
 
 	CrashLogOSX log(signum);
 	log.MakeCrashLog();
-	log.DisplayCrashDialog();
+	if (VideoDriver::GetInstance() == nullptr || VideoDriver::GetInstance()->HasGUI()) {
+		log.DisplayCrashDialog();
+	}
 
 	CrashLog::AfterCrashLogCleanup();
 	abort();

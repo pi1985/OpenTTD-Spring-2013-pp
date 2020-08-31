@@ -664,7 +664,9 @@ public:
 			DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, STR_NETWORK_SERVER_LIST_SERVER_VERSION); // server version
 			y += FONT_HEIGHT_NORMAL;
 
-			SetDParamStr(0, sel->address.GetAddressAsString());
+			char network_addr_buffer[NETWORK_HOSTNAME_LENGTH + 6 + 7];
+			sel->address.GetAddressAsString(network_addr_buffer, lastof(network_addr_buffer));
+			SetDParamStr(0, network_addr_buffer);
 			DrawString(r.left + WD_FRAMERECT_LEFT, r.right - WD_FRAMERECT_RIGHT, y, STR_NETWORK_SERVER_LIST_SERVER_ADDRESS); // server address
 			y += FONT_HEIGHT_NORMAL;
 
@@ -1578,7 +1580,7 @@ struct NetworkLobbyWindow : public Window {
 				NetworkTCPQueryServer(NetworkAddress(_settings_client.network.last_host, _settings_client.network.last_port)); // company info
 				NetworkUDPQueryServer(NetworkAddress(_settings_client.network.last_host, _settings_client.network.last_port)); // general data
 				/* Clear the information so removed companies don't remain */
-				memset(this->company_info, 0, sizeof(this->company_info));
+				for (auto &company : this->company_info) company = {};
 				break;
 		}
 	}
@@ -1687,12 +1689,12 @@ static WindowDesc _client_list_popup_desc(
 /* Here we start to define the options out of the menu */
 static void ClientList_Kick(const NetworkClientInfo *ci)
 {
-	NetworkServerKickClient(ci->client_id);
+	NetworkServerKickClient(ci->client_id, nullptr);
 }
 
 static void ClientList_Ban(const NetworkClientInfo *ci)
 {
-	NetworkServerKickOrBanIP(ci->client_id, true);
+	NetworkServerKickOrBanIP(ci->client_id, true, nullptr);
 }
 
 static void ClientList_GiveMoney(const NetworkClientInfo *ci)

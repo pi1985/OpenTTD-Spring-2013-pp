@@ -222,6 +222,13 @@ void UpdateAllVirtCoords()
 	RebuildViewportKdtree();
 }
 
+void ClearAllCachedNames()
+{
+	ClearAllStationCachedNames();
+	ClearAllTownCachedNames();
+	ClearAllIndustryCachedNames();
+}
+
 /**
  * Initialization of the windows and several kinds of caches.
  * This is not done directly in AfterLoadGame because these
@@ -238,6 +245,7 @@ static void InitializeWindowsAndCaches()
 	SetupColoursAndInitialWindow();
 
 	/* Update coordinates of the signs. */
+	ClearAllCachedNames();
 	UpdateAllVirtCoords();
 	ResetViewportAfterLoadGame();
 
@@ -637,20 +645,20 @@ bool AfterLoadGame()
 	if (IsSavegameVersionBefore(SLV_84)) {
 		for (Company *c : Company::Iterate()) {
 			c->name = CopyFromOldName(c->name_1);
-			if (c->name != nullptr) c->name_1 = STR_SV_UNNAMED;
+			if (!c->name.empty()) c->name_1 = STR_SV_UNNAMED;
 			c->president_name = CopyFromOldName(c->president_name_1);
-			if (c->president_name != nullptr) c->president_name_1 = SPECSTR_PRESIDENT_NAME;
+			if (!c->president_name.empty()) c->president_name_1 = SPECSTR_PRESIDENT_NAME;
 		}
 
 		for (Station *st : Station::Iterate()) {
 			st->name = CopyFromOldName(st->string_id);
 			/* generating new name would be too much work for little effect, use the station name fallback */
-			if (st->name != nullptr) st->string_id = STR_SV_STNAME_FALLBACK;
+			if (!st->name.empty()) st->string_id = STR_SV_STNAME_FALLBACK;
 		}
 
 		for (Town *t : Town::Iterate()) {
 			t->name = CopyFromOldName(t->townnametype);
-			if (t->name != nullptr) t->townnametype = SPECSTR_TOWNNAME_START + _settings_game.game_creation.town_name;
+			if (!t->name.empty()) t->townnametype = SPECSTR_TOWNNAME_START + _settings_game.game_creation.town_name;
 		}
 	}
 
@@ -890,6 +898,9 @@ bool AfterLoadGame()
 			case MP_STATION: {
 				BaseStation *bst = BaseStation::GetByTile(t);
 
+				/* Sanity check */
+				if (!IsBuoy(t) && bst->owner != GetTileOwner(t)) SlErrorCorrupt("Wrong owner for station tile");
+
 				/* Set up station spread */
 				bst->rect.BeforeAddTile(t, StationRect::ADD_FORCE);
 
@@ -921,19 +932,19 @@ bool AfterLoadGame()
 						break;
 
 					case STATION_OILRIG: {
+						/* The internal encoding of oil rigs was changed twice.
+						 * It was 3 (till 2.2) and later 5 (till 5.1).
+						 * DeleteOilRig asserts on the correct type, and
+						 * setting it unconditionally does not hurt.
+						 */
+						Station::GetByTile(t)->airport.type = AT_OILRIG;
+
 						/* Very old savegames sometimes have phantom oil rigs, i.e.
 						 * an oil rig which got shut down, but not completely removed from
 						 * the map
 						 */
 						TileIndex t1 = TILE_ADDXY(t, 0, 1);
-						if (IsTileType(t1, MP_INDUSTRY) &&
-								GetIndustryGfx(t1) == GFX_OILRIG_1) {
-							/* The internal encoding of oil rigs was changed twice.
-							 * It was 3 (till 2.2) and later 5 (till 5.1).
-							 * Setting it unconditionally does not hurt.
-							 */
-							Station::GetByTile(t)->airport.type = AT_OILRIG;
-						} else {
+						if (!IsTileType(t1, MP_INDUSTRY) || GetIndustryGfx(t1) != GFX_OILRIG_1) {
 							DeleteOilRig(t);
 						}
 						break;
@@ -1245,6 +1256,7 @@ bool AfterLoadGame()
 				}
 			} else if (v->z_pos > GetSlopePixelZ(v->x_pos, v->y_pos)) {
 				v->tile = GetNorthernBridgeEnd(v->tile);
+				v->UpdatePosition();
 			} else {
 				continue;
 			}
@@ -2195,7 +2207,7 @@ bool AfterLoadGame()
 			}
 
 			if (remove) {
-				DeleteAnimatedTile(*tile);
+				tile = _animated_tiles.erase(tile);
 			} else {
 				tile++;
 			}
@@ -2490,11 +2502,11 @@ bool AfterLoadGame()
 		 * highest possible number to get them numbered in the
 		 * order they have in the pool. */
 		for (Waypoint *wp : Waypoint::Iterate()) {
-			if (wp->name != nullptr) wp->town_cn = UINT16_MAX;
+			if (!wp->name.empty()) wp->town_cn = UINT16_MAX;
 		}
 
 		for (Waypoint* wp : Waypoint::Iterate()) {
-			if (wp->name != nullptr) MakeDefaultName(wp);
+			if (!wp->name.empty()) MakeDefaultName(wp);
 		}
 	}
 
@@ -2818,18 +2830,6 @@ bool AfterLoadGame()
 	 * which is done by StartupEngines(). */
 	if (gcf_res != GLC_ALL_GOOD) StartupEngines();
 
-	if (IsSavegameVersionBefore(SLV_166)) {
-		/* Update cargo acceptance map of towns. */
-		for (TileIndex t = 0; t < map_size; t++) {
-			if (!IsTileType(t, MP_HOUSE)) continue;
-			Town::Get(GetTownIndex(t))->cargo_accepted.Add(t);
-		}
-
-		for (Town *town : Town::Iterate()) {
-			UpdateTownCargoes(town);
-		}
-	}
-
 	/* The road owner of standard road stops was not properly accounted for. */
 	if (IsSavegameVersionBefore(SLV_172)) {
 		for (TileIndex t = 0; t < map_size; t++) {
@@ -2960,6 +2960,16 @@ bool AfterLoadGame()
 				}
 				cur_skip--;
 			}
+		}
+	}
+
+	if (IsSavegameVersionBefore(SLV_190)) {
+		for (Order *order : Order::Iterate()) {
+			order->SetTravelTimetabled(order->GetTravelTime() > 0);
+			order->SetWaitTimetabled(order->GetWaitTime() > 0);
+		}
+		for (OrderList *orderlist : OrderList::Iterate()) {
+			orderlist->RecalculateTimetableDuration();
 		}
 	}
 
@@ -3098,10 +3108,21 @@ bool AfterLoadGame()
 				if (IsDock(t) || IsOilRig(t)) Station::GetByTile(t)->ship_station.Add(t);
 			}
 		}
+	}
 
-		/* Scan for docking tiles */
+	if (IsSavegameVersionUntil(SLV_ENDING_YEAR)) {
+		/* Update station docking tiles. Was only needed for pre-SLV_MULTITLE_DOCKS
+		 * savegames, but a bug in docking tiles touched all savegames between
+		 * SLV_MULTITILE_DOCKS and SLV_ENDING_YEAR. */
 		for (Station *st : Station::Iterate()) {
 			if (st->ship_station.tile != INVALID_TILE) UpdateStationDockingTiles(st);
+		}
+
+		/* Reset roadtype/streetcartype info for non-road bridges. */
+		for (TileIndex t = 0; t < map_size; t++) {
+			if (IsTileType(t, MP_TUNNELBRIDGE) && GetTunnelBridgeTransportType(t) != TRANSPORT_ROAD) {
+				SetRoadTypes(t, INVALID_ROADTYPE, INVALID_ROADTYPE);
+			}
 		}
 	}
 

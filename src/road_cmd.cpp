@@ -1474,14 +1474,15 @@ void DrawRoadCatenary(const TileInfo *ti)
  * @param dx  the offset from the top of the BB of the tile
  * @param dy  the offset from the top of the BB of the tile
  * @param h   the height of the sprite to draw
+ * @param transparent  whether the sprite should be transparent (used for roadside trees)
  */
-static void DrawRoadDetail(SpriteID img, const TileInfo *ti, int dx, int dy, int h)
+static void DrawRoadDetail(SpriteID img, const TileInfo *ti, int dx, int dy, int h, bool transparent)
 {
 	int x = ti->x | dx;
 	int y = ti->y | dy;
 	int z = ti->z;
 	if (ti->tileh != SLOPE_FLAT) z = GetSlopePixelZ(x, y);
-	AddSortableSpriteToDraw(img, PAL_NONE, x, y, 2, 2, h, z);
+	AddSortableSpriteToDraw(img, PAL_NONE, x, y, 2, 2, h, z, transparent);
 }
 
 /**
@@ -1634,9 +1635,12 @@ static void DrawRoadBits(TileInfo *ti)
 	/* If there are no road bits, return, as there is nothing left to do */
 	if (HasAtMostOneBit(road)) return;
 
+	if (roadside == ROADSIDE_TREES && IsInvisibilitySet(TO_TREES)) return;
+	bool is_transparent = roadside == ROADSIDE_TREES && IsTransparencySet(TO_TREES);
+
 	/* Draw extra details. */
 	for (const DrawRoadTileStruct *drts = _road_display_table[roadside][road | tram]; drts->image != 0; drts++) {
-		DrawRoadDetail(drts->image, ti, drts->subcoord_x, drts->subcoord_y, 0x10);
+		DrawRoadDetail(drts->image, ti, drts->subcoord_x, drts->subcoord_y, 0x10, is_transparent);
 	}
 }
 
@@ -1955,6 +1959,12 @@ static void TileLoop_Road(TileIndex tile)
 
 			if (old_rb != new_rb) {
 				RemoveRoad(tile, DC_EXEC | DC_AUTO | DC_NO_WATER, (old_rb ^ new_rb), RTT_ROAD, true);
+
+				/* If new_rb is 0, there are now no road pieces left and the tile is no longer a road tile */
+				if (new_rb == 0) {
+					MarkTileDirtyByTile(tile);
+					return;
+				}
 			}
 		}
 
@@ -2269,12 +2279,12 @@ static Vehicle *UpdateRoadVehPowerProc(Vehicle *v, void *data)
 }
 
 /**
- * Checks the tile and returns whether the current player is allowed to convert the roadtype to another roadtype
+ * Checks the tile and returns whether the current player is allowed to convert the roadtype to another roadtype without taking ownership
  * @param owner the tile owner.
  * @param rtt Road/tram type.
  * @return whether the road is convertible
  */
-static bool CanConvertRoadType(Owner owner, RoadTramType rtt)
+static bool CanConvertUnownedRoadType(Owner owner, RoadTramType rtt)
 {
 	return (owner == OWNER_NONE || (owner == OWNER_TOWN && rtt == RTT_ROAD));
 }
@@ -2370,7 +2380,7 @@ CommandCost CmdConvertRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 
 		/* Trying to convert other's road */
 		Owner owner = GetRoadOwner(tile, rtt);
-		if (!CanConvertRoadType(owner, rtt)) {
+		if (!CanConvertUnownedRoadType(owner, rtt)) {
 			CommandCost ret = CheckOwnership(owner, tile);
 			if (ret.Failed()) {
 				error = ret;
@@ -2389,7 +2399,8 @@ CommandCost CmdConvertRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 				}
 
 				if (rtt == RTT_ROAD && owner == OWNER_TOWN) {
-					error.MakeError(STR_ERROR_INCOMPATIBLE_ROAD);
+					error.MakeError(STR_ERROR_OWNED_BY);
+					GetNameOfOwner(OWNER_TOWN, tile);
 					continue;
 				}
 			}
@@ -2400,7 +2411,7 @@ CommandCost CmdConvertRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 
 			if (flags & DC_EXEC) { // we can safely convert, too
 				/* Update the company infrastructure counters. */
-				if (!IsRoadStopTile(tile) && CanConvertRoadType(owner, rtt) && owner != OWNER_TOWN) {
+				if (!IsRoadStopTile(tile) && owner == _current_company) {
 					ConvertRoadTypeOwner(tile, num_pieces, owner, from_type, to_type);
 				}
 
@@ -2435,7 +2446,8 @@ CommandCost CmdConvertRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 				}
 
 				if (rtt == RTT_ROAD && owner == OWNER_TOWN) {
-					error.MakeError(STR_ERROR_INCOMPATIBLE_ROAD);
+					error.MakeError(STR_ERROR_OWNED_BY);
+					GetNameOfOwner(OWNER_TOWN, tile);
 					continue;
 				}
 			}
@@ -2447,7 +2459,7 @@ CommandCost CmdConvertRoad(TileIndex tile, DoCommandFlag flags, uint32 p1, uint3
 
 			if (flags & DC_EXEC) {
 				/* Update the company infrastructure counters. */
-				if (CanConvertRoadType(owner, rtt) && owner != OWNER_TOWN) {
+				if (owner == _current_company) {
 					ConvertRoadTypeOwner(tile, num_pieces, owner, from_type, to_type);
 					ConvertRoadTypeOwner(endtile, num_pieces, owner, from_type, to_type);
 					SetTunnelBridgeOwner(tile, endtile, _current_company);

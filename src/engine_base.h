@@ -19,7 +19,7 @@ typedef Pool<Engine, EngineID, 64, 64000> EnginePool;
 extern EnginePool _engine_pool;
 
 struct Engine : EnginePool::PoolItem<&_engine_pool> {
-	char *name;                 ///< Custom name of engine.
+	std::string name;           ///< Custom name of engine.
 	Date intro_date;            ///< Date of introduction of the engine.
 	Date age;
 	uint16 reliability;         ///< Current reliability of the engine.
@@ -29,7 +29,7 @@ struct Engine : EnginePool::PoolItem<&_engine_pool> {
 	uint16 reliability_final;   ///< Final reliability of the engine.
 	uint16 duration_phase_1;    ///< First reliability phase in months, increasing reliability from #reliability_start to #reliability_max.
 	uint16 duration_phase_2;    ///< Second reliability phase in months, keeping #reliability_max.
-	uint16 duration_phase_3;    ///< Third reliability phase on months, decaying to #reliability_final.
+	uint16 duration_phase_3;    ///< Third reliability phase in months, decaying to #reliability_final.
 	byte flags;                 ///< Flags of the engine. @see EngineFlags
 	CompanyMask preview_asked;  ///< Bit for each company which has already been offered a preview.
 	CompanyID preview_company;  ///< Company which is currently being offered a preview \c INVALID_COMPANY means no company.
@@ -142,15 +142,21 @@ struct Engine : EnginePool::PoolItem<&_engine_pool> {
 
 	uint32 GetGRFID() const;
 
+	struct EngineTypeFilter {
+		VehicleType vt;
+
+		bool operator() (size_t index) { return Engine::Get(index)->type == this->vt; }
+	};
+
 	/**
 	 * Returns an iterable ensemble of all valid engines of the given type
 	 * @param vt the VehicleType for engines to be valid
 	 * @param from index of the first engine to consider
 	 * @return an iterable ensemble of all valid engines of the given type
 	 */
-	static Pool::IterateWrapper<Engine> IterateType(VehicleType vt, size_t from = 0)
+	static Pool::IterateWrapperFiltered<Engine, EngineTypeFilter> IterateType(VehicleType vt, size_t from = 0)
 	{
-		return Pool::IterateWrapper<Engine>(from, [vt](size_t index) { return Engine::Get(index)->type == vt; });
+		return Pool::IterateWrapperFiltered<Engine, EngineTypeFilter>(from, EngineTypeFilter{ vt });
 	}
 };
 

@@ -141,29 +141,6 @@ private:
 		}
 	}
 
-	/** Sort the groups by their name */
-	static bool GroupNameSorter(const Group * const &a, const Group * const &b)
-	{
-		static const Group *last_group[2] = { nullptr, nullptr };
-		static char         last_name[2][64] = { "", "" };
-
-		if (a != last_group[0]) {
-			last_group[0] = a;
-			SetDParam(0, a->index);
-			GetString(last_name[0], STR_GROUP_NAME, lastof(last_name[0]));
-		}
-
-		if (b != last_group[1]) {
-			last_group[1] = b;
-			SetDParam(0, b->index);
-			GetString(last_name[1], STR_GROUP_NAME, lastof(last_name[1]));
-		}
-
-		int r = strnatcmp(last_name[0], last_name[1]); // Sort by name (natural sorting).
-		if (r == 0) return a->index < b->index;
-		return r < 0;
-	}
-
 	/**
 	 * (Re)Build the group list.
 	 *
@@ -185,7 +162,27 @@ private:
 		}
 
 		list.ForceResort();
-		list.Sort(&GroupNameSorter);
+
+		/* Sort the groups by their name */
+		const Group *last_group[2] = { nullptr, nullptr };
+		char         last_name[2][64] = { "", "" };
+		list.Sort([&](const Group * const &a, const Group * const &b) {
+			if (a != last_group[0]) {
+				last_group[0] = a;
+				SetDParam(0, a->index);
+				GetString(last_name[0], STR_GROUP_NAME, lastof(last_name[0]));
+			}
+
+			if (b != last_group[1]) {
+				last_group[1] = b;
+				SetDParam(0, b->index);
+				GetString(last_name[1], STR_GROUP_NAME, lastof(last_name[1]));
+			}
+
+			int r = strnatcmp(last_name[0], last_name[1]); // Sort by name (natural sorting).
+			if (r == 0) return a->index < b->index;
+			return r < 0;
+		});
 
 		AddChildren(&list, INVALID_GROUP, 0);
 
@@ -299,7 +296,7 @@ private:
 			spr = SPR_PROFIT_NA;
 		} else if (profit_last_year < 0) {
 			spr = SPR_PROFIT_NEGATIVE;
-		} else if (profit_last_year < (Money)10000 * num_profit_vehicle) { // TODO magic number
+		} else if (profit_last_year < VEHICLE_PROFIT_THRESHOLD * num_profit_vehicle) {
 			spr = SPR_PROFIT_SOME;
 		} else {
 			spr = SPR_PROFIT_LOT;
@@ -1017,6 +1014,7 @@ public:
 				}
 				this->groups.ForceRebuild();
 				this->BuildGroupList(this->owner);
+				this->group_sb->SetCount((uint)this->groups.size());
 				id_g = find_index(this->groups, g);
 			}
 			this->group_sb->ScrollTowards(id_g);

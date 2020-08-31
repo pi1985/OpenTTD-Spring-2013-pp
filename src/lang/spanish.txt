@@ -403,7 +403,7 @@ STR_FILE_MENU_EXIT                                              :Salir
 
 # map menu
 STR_MAP_MENU_MAP_OF_WORLD                                       :Mapa del mundo
-STR_MAP_MENU_EXTRA_VIEW_PORT                                    :Punto de vista extra
+STR_MAP_MENU_EXTRA_VIEWPORT                                     :Punto de vista extra
 STR_MAP_MENU_LINGRAPH_LEGEND                                    :Leyenda de Movimientos de Carga
 STR_MAP_MENU_SIGN_LIST                                          :Lista de carteles
 
@@ -479,9 +479,6 @@ STR_ABOUT_MENU_SEPARATOR                                        :
 STR_ABOUT_MENU_TOGGLE_CONSOLE                                   :Activar consola
 STR_ABOUT_MENU_AI_DEBUG                                         :Depuración de Script de Juego / IA
 STR_ABOUT_MENU_SCREENSHOT                                       :Captura de pantalla
-STR_ABOUT_MENU_ZOOMIN_SCREENSHOT                                :Captura con zoom de cerca
-STR_ABOUT_MENU_DEFAULTZOOM_SCREENSHOT                           :Captura con zoom por defecto
-STR_ABOUT_MENU_GIANT_SCREENSHOT                                 :Captura de mapa completo
 STR_ABOUT_MENU_SHOW_FRAMERATE                                   :Mostrar fotogramas por segundo - FPS
 STR_ABOUT_MENU_ABOUT_OPENTTD                                    :Acerca de 'OpenTTD'
 STR_ABOUT_MENU_SPRITE_ALIGNER                                   :Alineador de sprites
@@ -652,9 +649,6 @@ STR_MUSIC_PLAYLIST_CUSTOM_1                                     :{TINY_FONT}{BLA
 STR_MUSIC_PLAYLIST_CUSTOM_2                                     :{TINY_FONT}{BLACK}Personal 2
 STR_MUSIC_MUSIC_VOLUME                                          :{TINY_FONT}{BLACK}Volumen música
 STR_MUSIC_EFFECTS_VOLUME                                        :{TINY_FONT}{BLACK}Volumen efectos
-STR_MUSIC_RULER_MIN                                             :{TINY_FONT}{BLACK}MÍN
-STR_MUSIC_RULER_MAX                                             :{TINY_FONT}{BLACK}MÁX
-STR_MUSIC_RULER_MARKER                                          :{TINY_FONT}{BLACK}'
 STR_MUSIC_TRACK_NONE                                            :{TINY_FONT}{DKGREEN}--
 STR_MUSIC_TRACK_DIGIT                                           :{TINY_FONT}{DKGREEN}{ZEROFILL_NUM}
 STR_MUSIC_TITLE_NONE                                            :{TINY_FONT}{DKGREEN}------
@@ -890,7 +884,7 @@ STR_NEWS_EXCLUSIVE_RIGHTS_TITLE                                 :{BIG_FONT}{BLAC
 STR_NEWS_EXCLUSIVE_RIGHTS_DESCRIPTION                           :{BIG_FONT}{BLACK}¡La autoridad local de {TOWN} firma un contrato de exclusividad con {STRING} por un año!
 
 # Extra view window
-STR_EXTRA_VIEW_PORT_TITLE                                       :{WHITE}Vista {COMMA}
+STR_EXTRA_VIEWPORT_TITLE                                        :{WHITE}Vista {COMMA}
 STR_EXTRA_VIEW_MOVE_VIEW_TO_MAIN                                :{BLACK}Cambiar punto de vista
 STR_EXTRA_VIEW_MOVE_VIEW_TO_MAIN_TT                             :{BLACK}Copia la localización de la vista principal a este punto de vista
 STR_EXTRA_VIEW_MOVE_MAIN_TO_VIEW                                :{BLACK}Cambiar vista principal
@@ -2732,7 +2726,7 @@ STR_LAI_OBJECT_DESCRIPTION_COMPANY_OWNED_LAND                   :Terreno propied
 STR_ABOUT_OPENTTD                                               :{WHITE}Acerca de OpenTTD
 STR_ABOUT_ORIGINAL_COPYRIGHT                                    :{BLACK}Copyright Original {COPYRIGHT} 1995 Chris Sawyer, Todos los derechos reservados
 STR_ABOUT_VERSION                                               :{BLACK}OpenTTD versión {REV}
-STR_ABOUT_COPYRIGHT_OPENTTD                                     :{BLACK}OpenTTD {COPYRIGHT} 2002-2019 El equipo OpenTTD
+STR_ABOUT_COPYRIGHT_OPENTTD                                     :{BLACK}OpenTTD {COPYRIGHT} 2002-{STRING} El equipo OpenTTD
 
 # Framerate display window
 STR_FRAMERATE_CAPTION                                           :{WHITE}Fotogramas por segundo - FPS
@@ -4167,6 +4161,7 @@ STR_AI_LIST_ACCEPT_TOOLTIP                                      :{BLACK}Seleccio
 STR_AI_LIST_CANCEL                                              :{BLACK}Cancelar
 STR_AI_LIST_CANCEL_TOOLTIP                                      :{BLACK}No cambiar de script
 
+
 # AI Parameters
 STR_AI_SETTINGS_CAPTION                                         :{WHITE}Parámetros {STRING}
 STR_AI_SETTINGS_CAPTION_AI                                      :IA
@@ -4463,7 +4458,6 @@ STR_ERROR_CAN_T_CONVERT_ROAD                                    :{WHITE}No es po
 STR_ERROR_CAN_T_CONVERT_TRAMWAY                                 :{WHITE}No se puede convertir el tipo de tranvía aquí...
 STR_ERROR_NO_SUITABLE_ROAD                                      :{WHITE}No hay carretera adecuada
 STR_ERROR_NO_SUITABLE_TRAMWAY                                   :{WHITE}No hay un tranvía adecuado
-STR_ERROR_INCOMPATIBLE_ROAD                                     :{WHITE}... carretera incompatible
 STR_ERROR_INCOMPATIBLE_TRAMWAY                                  :{WHITE}... tranvía incompatible
 
 # Waterway construction errors

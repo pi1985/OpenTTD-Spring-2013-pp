@@ -40,13 +40,6 @@ static uint8 _linkstat_colours_in_legenda[] = {0, 1, 3, 5, 7, 9, 11};
 
 static const int NUM_NO_COMPANY_ENTRIES = 4; ///< Number of entries in the owner legend that are not companies.
 
-static const uint8 PC_ROUGH_LAND      = 0x52; ///< Dark green palette colour for rough land.
-static const uint8 PC_GRASS_LAND      = 0x54; ///< Dark green palette colour for grass land.
-static const uint8 PC_BARE_LAND       = 0x37; ///< Brown palette colour for bare land.
-static const uint8 PC_FIELDS          = 0x25; ///< Light brown palette colour for fields.
-static const uint8 PC_TREES           = 0x57; ///< Green palette colour for trees.
-static const uint8 PC_WATER           = 0xC9; ///< Dark blue palette colour for water.
-
 /** Macro for ordinary entry of LegendAndColour */
 #define MK(a, b) {a, b, INVALID_INDUSTRYTYPE, 0, INVALID_COMPANY, true, false, false}
 
@@ -938,7 +931,7 @@ void SmallMapWindow::DrawTowns(const DrawPixelInfo *dpi) const
 void SmallMapWindow::DrawMapIndicators() const
 {
 	/* Find main viewport. */
-	const ViewPort *vp = FindWindowById(WC_MAIN_WINDOW, 0)->viewport;
+	const Viewport *vp = FindWindowById(WC_MAIN_WINDOW, 0)->viewport;
 
 	Point upper_left_smallmap_coord  = InverseRemapCoords2(vp->virtual_left, vp->virtual_top);
 	Point lower_right_smallmap_coord = InverseRemapCoords2(vp->virtual_left + vp->virtual_width - 1, vp->virtual_top + vp->virtual_height - 1);
@@ -1653,7 +1646,7 @@ void SmallMapWindow::SetNewScroll(int sx, int sy, int sub)
  */
 void SmallMapWindow::SmallMapCenterOnCurrentPos()
 {
-	const ViewPort *vp = FindWindowById(WC_MAIN_WINDOW, 0)->viewport;
+	const Viewport *vp = FindWindowById(WC_MAIN_WINDOW, 0)->viewport;
 	Point viewport_center = InverseRemapCoords2(vp->virtual_left + vp->virtual_width / 2, vp->virtual_top + vp->virtual_height / 2);
 
 	int sub;
